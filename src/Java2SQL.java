@@ -80,19 +80,26 @@ public class Java2SQL {
     //use prepared statement and use setObject on all values in card
     //get ID out of result set
     public void createCards(Card card) throws SQLException {
-        String createStatement = "INSERT INTO IndexData (Header, Body, DateCreated, DateUpdated) VALUES ('" + card.getHeader() + "', '" + card.getBody() + "', '" + Date.valueOf(LocalDate.now()) + "', '" + Date.valueOf(LocalDate.now()) + "')";
+        String createStatement = "INSERT INTO IndexData (Header, Body, DateCreated, DateUpdated) VALUES (? ,?, ?, ?)";
         if(card.getID() == 0 & card.isUpdated)   {
             PreparedStatement statement = connection.prepareStatement(createStatement);
+            statement.setString(1, card.getHeader());
+            statement.setString(2, card.getBody());
+            statement.setObject(3, Date.valueOf(LocalDate.now()));
+            statement.setObject(4, Date.valueOf(LocalDate.now()));
             statement.execute();
         }
     }
 
     //this executes an SQL query that updates records based off card edits made in card dialog GUI
     public void updateCards(Card card) throws SQLException {
-        String updateStatement = "UPDATE IndexData SET Header = '"+card.getHeader()+"', Body = '"+card.getBody()+"', DateUpdated = '"+Date.valueOf(LocalDate.now())+"' WHERE ID = "+card.getID();
+        String updateStatement = "UPDATE IndexData SET Header = ?, Body = ?, DateUpdated = ? WHERE ID = "+card.getID();
 
         if(card.isUpdated) {
             PreparedStatement preparedStatement = connection.prepareStatement(updateStatement);
+            preparedStatement.setString(1, card.getHeader());
+            preparedStatement.setString(2, card.getBody());
+            preparedStatement.setObject(3, Date.valueOf(LocalDate.now()));
             preparedStatement.execute();
         }
     }

@@ -57,10 +57,9 @@ public class MainGUI  {
             public void actionPerformed(ActionEvent e) {
                 Card currentCard = new Card();
                 String selected = sortBox.getSelectedItem().toString();
-
                 CardDialogGUI cardDialogGUI = new CardDialogGUI(currentCard, connection2DB, indexTableModel, selected);
-
                 cardDialogGUI.createWindow("New Card");
+
             }
         });
     }
@@ -97,16 +96,12 @@ public class MainGUI  {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int x = dataTable.getSelectedRow();
-
                 if(x > -1) {
                     Card currentCard = indexList.get(x);
                     String selected = sortBox.getSelectedItem().toString();
-
                     DeletePopUp deletePopUp = new DeletePopUp(currentCard, connection2DB, indexTableModel, selected);
-
                     deletePopUp.createWindow();
                 }
-
                 else {
                     ErrorPopUP errorPopUP = new ErrorPopUP();
                     errorPopUP.createWindow();
@@ -120,12 +115,10 @@ public class MainGUI  {
             try {indexList = connection2DB.getIndexCardsDateCreated();}
             catch (SQLException ex) {throw new RuntimeException(ex);}
         }
-
         else if(sortBox.getSelectedItem().toString().equals("Date Updated")) {
             try {indexList = connection2DB.getIndexCardsDateUpdated();}
             catch (SQLException ex) {throw new RuntimeException(ex);}
         }
-
         else {
             try {indexList = connection2DB.getIndexCardsAlphabetical();}
             catch (SQLException ex) {throw new RuntimeException(ex);}
@@ -152,7 +145,7 @@ public class MainGUI  {
 
         @Override
         public int getColumnCount() {
-            return 5;
+            return columnNames.length;
         }
 
         @Override
@@ -184,7 +177,7 @@ public class MainGUI  {
                 catch (SQLException ex) {throw new RuntimeException(ex);}
             }
 
-        else if(selected.equals("Date Updated")) {
+            else if(selected.equals("Date Updated")) {
                 try {indexList = connection2DB.getIndexCardsDateUpdated();}
                 catch (SQLException ex) {throw new RuntimeException(ex);}
             }
@@ -193,8 +186,6 @@ public class MainGUI  {
                 try {indexList = connection2DB.getIndexCardsAlphabetical();}
                 catch (SQLException ex) {throw new RuntimeException(ex);}
             }
-
-            indexTableModel = new IndexTableModel(indexList);
         }
     }
 }

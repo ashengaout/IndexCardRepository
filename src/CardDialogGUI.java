@@ -23,6 +23,8 @@ public class CardDialogGUI extends Container {
         currentCard = inputCard;
         tableModel = model;
         this.selected = selected;
+        headerTxtField.setText(currentCard.getHeader());
+        bodyTxtField.setText(currentCard.getBody());
     }
 
     public void saveButtonActionListener() {
