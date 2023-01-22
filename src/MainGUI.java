@@ -1,20 +1,24 @@
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class MainGUI  {
     private JPanel mainGUI;
-    private JComboBox sortBox;
     private JTable dataTable;
     private JButton newCardButton;
     private JButton deleteCardButton;
     private JButton updateCardButton;
+    private JComboBox listComboBox;
+    private JButton newListButton;
+    private JButton deleteListButton;
     private static Java2SQL connection2DB;
     private static ArrayList <Card> indexList;
     private static IndexTableModel indexTableModel;
+    private static JComboBoxModel comboBoxModel;
+    private static int listID;
+    private static ArrayList listsDB;
 
     public static void main(String[] args) {
         JFrame mainGUIFrame = new JFrame ("Cards");
@@ -27,26 +31,19 @@ public class MainGUI  {
     public MainGUI() {
         try {
             connection2DB = new Java2SQL();
-            connection2DB.getIndexCardsAlphabetical();
 
-            this.addSortActionListener();
             this.addCreateActionListener();
             this.addUpdateActionListener();
             this.addDeleteActionListener();
             this.displayData();
+            this.createComboList();
+            this.addListBoxActionListener();
+            this.addNewListActionListener();
+            this.addDeleteListListener();
+            dataTable.setAutoCreateRowSorter(true);
         }
 
         catch (SQLException x) {x.printStackTrace();}
-    }
-
-    //retrieves proper order and places it into the index list, also calls the redisplay method
-    public void addSortActionListener() {
-        sortBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                displayData();
-            }
-        });
     }
 
     //creates a card dialog object and opens that GUI and creates a new default card that is passed as a parameter
@@ -56,10 +53,8 @@ public class MainGUI  {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Card currentCard = new Card();
-                String selected = sortBox.getSelectedItem().toString();
-                CardDialogGUI cardDialogGUI = new CardDialogGUI(currentCard, connection2DB, indexTableModel, selected);
+                CardDialogGUI cardDialogGUI = new CardDialogGUI(currentCard, connection2DB, indexTableModel, listID);
                 cardDialogGUI.createWindow("New Card");
-
             }
         });
     }
@@ -74,10 +69,7 @@ public class MainGUI  {
 
                 if(x > -1) {
                     Card currentCard = indexList.get(x);
-                    String selected = sortBox.getSelectedItem().toString();
-
-                    CardDialogGUI cardDialogGUI = new CardDialogGUI(currentCard, connection2DB, indexTableModel, selected);
-
+                    CardDialogGUI cardDialogGUI = new CardDialogGUI(currentCard, connection2DB, indexTableModel);
                     cardDialogGUI.createWindow("Update Card");
                 }
 
@@ -98,8 +90,7 @@ public class MainGUI  {
                 int x = dataTable.getSelectedRow();
                 if(x > -1) {
                     Card currentCard = indexList.get(x);
-                    String selected = sortBox.getSelectedItem().toString();
-                    DeletePopUp deletePopUp = new DeletePopUp(currentCard, connection2DB, indexTableModel, selected);
+                    DeletePopUp deletePopUp = new DeletePopUp(currentCard, connection2DB, indexTableModel);
                     deletePopUp.createWindow();
                 }
                 else {
@@ -110,19 +101,70 @@ public class MainGUI  {
         });
     }
 
+    //this action listener displays data from each list when different lists are selected
+    public void addListBoxActionListener() {
+        listComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedList = listComboBox.getSelectedItem().toString();
+
+                try {listID = connection2DB.getListID(selectedList);}
+                catch (SQLException ex) {throw new RuntimeException(ex);}
+
+                indexTableModel.updateData();
+                indexTableModel.fireTableDataChanged();
+            }
+        });
+    }
+
+    //this method should create a new list when the create new list button is clicked
+    public void addNewListActionListener() {
+        newListButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                NewListGUI newList = new NewListGUI(connection2DB, comboBoxModel);
+                newList.createWindow();
+            }
+        });
+    }
+
+    //this method deletes the selected list
+    public void addDeleteListListener() {
+        deleteListButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(listsDB.size() > 0 & indexList.size() == 0) {
+                    DeleteListGUI deleteListGUI = new DeleteListGUI(connection2DB, listID, comboBoxModel, indexList);
+                    deleteListGUI.createWindow();
+                }
+
+                else if(indexList.size() > 0) {
+                    IndexDeletionError indexDeletionError = new IndexDeletionError();
+                    indexDeletionError.createWindow();
+                }
+
+                else {
+                    ErrorPopUP errorPopUP = new ErrorPopUP();
+                    errorPopUP.createWindow();
+                }
+            }
+        });
+    }
+
+
+    //sets combo model to the combo box object during the initial runtime
+    public void createComboList() throws SQLException {
+        listsDB = connection2DB.getLists();
+
+        comboBoxModel = new JComboBoxModel(listsDB);
+        comboBoxModel.setSelectedItem(listsDB.get(0));
+        listComboBox.setModel(comboBoxModel);
+    }
+
+    //this method does the initial display of data when the main GUI pops up
     public void displayData() {
-        if(sortBox.getSelectedItem().toString().equals("Date Created")) {
-            try {indexList = connection2DB.getIndexCardsDateCreated();}
-            catch (SQLException ex) {throw new RuntimeException(ex);}
-        }
-        else if(sortBox.getSelectedItem().toString().equals("Date Updated")) {
-            try {indexList = connection2DB.getIndexCardsDateUpdated();}
-            catch (SQLException ex) {throw new RuntimeException(ex);}
-        }
-        else {
-            try {indexList = connection2DB.getIndexCardsAlphabetical();}
-            catch (SQLException ex) {throw new RuntimeException(ex);}
-        }
+        try {indexList = connection2DB.getIndexCardsAlphabetical(1);}
+        catch (SQLException ex) {throw new RuntimeException(ex);}
 
         indexTableModel = new IndexTableModel(indexList);
         dataTable.setModel(indexTableModel);
@@ -171,21 +213,30 @@ public class MainGUI  {
             return super.getColumnClass(columnIndex);
         }
 
-        public void updateData(String selected) {
-            if(selected.equals("Date Created")) {
-                try {indexList = connection2DB.getIndexCardsDateCreated();}
+        public void updateData() {
+                try {indexList = connection2DB.getIndexCardsAlphabetical(listID);}
                 catch (SQLException ex) {throw new RuntimeException(ex);}
-            }
+        }
+    }
 
-            else if(selected.equals("Date Updated")) {
-                try {indexList = connection2DB.getIndexCardsDateUpdated();}
-                catch (SQLException ex) {throw new RuntimeException(ex);}
-            }
+    //private class to create the combo box display list
+    public static class JComboBoxModel extends DefaultComboBoxModel {
+        private JComboBoxModel(ArrayList lists) {
+            listsDB = lists;
+        }
 
-            else {
-                try {indexList = connection2DB.getIndexCardsAlphabetical();}
-                catch (SQLException ex) {throw new RuntimeException(ex);}
-            }
+        @Override
+        public int getSize() {
+            return  listsDB.size();
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            return listsDB.get(index);
+        }
+
+        public void updateLists() throws SQLException {
+            listsDB = connection2DB.getLists();
         }
     }
 }

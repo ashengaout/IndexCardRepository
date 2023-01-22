@@ -11,20 +11,30 @@ public class CardDialogGUI extends Container {
     private JTextField headerTxtField;
     private JButton saveButton;
     private JButton cancelButton;
-    private JTextField bodyTxtField;
+    private JTextArea bodyTxtField;
     private Java2SQL connection;
     private MainGUI.IndexTableModel tableModel;
-    private String selected;
+    private int listIdentity;
 
-    public CardDialogGUI(Card inputCard, Java2SQL connection2DB, MainGUI.IndexTableModel model, String selected) {
+    public CardDialogGUI(Card inputCard, Java2SQL connection2DB, MainGUI.IndexTableModel model) {
         connection = connection2DB;
         this.saveButtonActionListener();
         this.cancelButtonActionListener();
         currentCard = inputCard;
         tableModel = model;
-        this.selected = selected;
         headerTxtField.setText(currentCard.getHeader());
         bodyTxtField.setText(currentCard.getBody());
+    }
+
+    public CardDialogGUI(Card inputCard, Java2SQL connection2DB, MainGUI.IndexTableModel model, int listID) {
+        connection = connection2DB;
+        this.saveButtonActionListener();
+        this.cancelButtonActionListener();
+        currentCard = inputCard;
+        tableModel = model;
+        headerTxtField.setText(currentCard.getHeader());
+        bodyTxtField.setText(currentCard.getBody());
+        listIdentity = listID;
     }
 
     public void saveButtonActionListener() {
@@ -35,6 +45,7 @@ public class CardDialogGUI extends Container {
                 currentCard.setHeader(headerTxtField.getText());
                 currentCard.setBody(bodyTxtField.getText());
                 currentCard.setDateUpdated();
+                currentCard.setListID(listIdentity);
 
                 if(currentCard.getID() != 0) {
                     currentCard.setDateUpdated();
@@ -49,7 +60,7 @@ public class CardDialogGUI extends Container {
                 }
 
                 newCard.dispose();
-                tableModel.updateData(selected);
+                tableModel.updateData();
                 tableModel.fireTableDataChanged();
             }
         });

@@ -13,15 +13,13 @@ public class DeletePopUp extends Container {
     private Card currentCard;
     private Java2SQL connection2DB;
     private MainGUI.IndexTableModel indexTableModel;
-    private String selected;
 
-    public DeletePopUp(Card inputCard, Java2SQL connection, MainGUI.IndexTableModel indexModel, String sortBox) {
+    public DeletePopUp(Card inputCard, Java2SQL connection, MainGUI.IndexTableModel indexModel) {
         addYesButtonActionListener();
         addCancelButtonActionListener();
         currentCard = inputCard;
         connection2DB = connection;
         indexTableModel = indexModel;
-        selected = sortBox;
     }
 
     //this needs to set isUpdated to true and then the GUI needs to close
@@ -33,7 +31,7 @@ public class DeletePopUp extends Container {
                 try {connection2DB.deleteCards(currentCard);}
                 catch (SQLException ex) {throw new RuntimeException(ex);}
                 deleteFrame.dispose();
-                indexTableModel.updateData(selected);
+                indexTableModel.updateData();
                 indexTableModel.fireTableDataChanged();
             }
         });
@@ -56,9 +54,5 @@ public class DeletePopUp extends Container {
         deleteFrame.setDefaultCloseOperation(deleteFrame.EXIT_ON_CLOSE);
         deleteFrame.pack();
         deleteFrame.setVisible(true);
-    }
-
-    public void updateData() {
-
     }
 }

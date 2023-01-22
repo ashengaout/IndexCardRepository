@@ -6,16 +6,18 @@ public class Card {
     private String body;
     private LocalDate dateCreated;
     private LocalDate dateUpdated;
+    private int listID;
     boolean isUpdated;
 
     Card() {}
 
-    Card(String headerInput, String bodyInput) {
+    Card(String headerInput, String bodyInput, int listID) {
         ID = 0;
         header = headerInput;
         body = bodyInput;
         dateCreated = LocalDate.now();
         dateUpdated = LocalDate.now();
+        this.listID = listID;
         isUpdated = false;
     }
 
@@ -25,6 +27,7 @@ public class Card {
         body = bodyInput;
         dateCreated = created;
         dateUpdated = updated;
+        this.listID = listID;
         isUpdated = false;
     }
 
@@ -38,13 +41,15 @@ public class Card {
 
     public LocalDate getDateCreated() {return dateCreated;}
 
+    public int getListID() {return listID;}
+
     public void setHeader(String newHeader) {header = newHeader;}
 
     public void setBody(String newBody) {body = newBody;}
 
     public void setDateUpdated() {dateUpdated = LocalDate.now();}
 
-    public void setDateCreated() {this.dateCreated = LocalDate.now();}
-
     public void setUpdated(boolean x) {isUpdated = x;}
+
+    public void setListID(int x) {listID = x;}
 }
