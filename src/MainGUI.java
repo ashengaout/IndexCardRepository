@@ -41,6 +41,8 @@ public class MainGUI  {
             this.addNewListActionListener();
             this.addDeleteListListener();
             dataTable.setAutoCreateRowSorter(true);
+            comboBoxModel.setSelectedItem(listsDB.get(0));
+            listID = connection2DB.getListID(listComboBox.getSelectedItem().toString());
         }
 
         catch (SQLException x) {x.printStackTrace();}
